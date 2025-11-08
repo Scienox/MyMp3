@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout,
                                 QSizePolicy, QFormLayout
                                 )
 from class_item.media_player import MediaPlayer
+from graphics.stacked_cutom import StackedCustom
 
 
 class MainWindow(QMainWindow):
@@ -48,6 +49,21 @@ class MainWindow(QMainWindow):
         self.menuDrawerAnim.setEasingCurve(QEasingCurve.OutCubic)
         self.menuDrawerAnim.setDuration(self._anim_full_duration)
         self.menuDrawerAnim.finished.connect(self._on_menuDrawerAnim_finished)
+
+        self.menuDrawerLayout = QVBoxLayout(self.menuDrawer)
+    
+        self.stackedWidget = StackedCustom(self.menuDrawer, tab_height=30)
+        self.stackedWidget.add_page(QWidget(), "En ligne")
+        self.stackedWidget.add_page(QWidget(), "Bibliothèque")
+        self.stackedWidget.add_page(QWidget(), "Favoris en ligne")
+
+        self.stackedWidget.stack.widget(0).setLayout(QVBoxLayout())
+        self.stackedWidget.stack.widget(0).layout().addWidget(QLabel("Contenu En ligne"))
+
+        self.menuDrawerLayout.addWidget(self.stackedWidget)
+
+        
+
 
     def toggleMenuDrawer(self):
         central = self.centralWidget()
