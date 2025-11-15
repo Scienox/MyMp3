@@ -5,6 +5,59 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout,
                                 QVBoxLayout, QGridLayout, QPushButton,
                                 QLineEdit, QStackedWidget, QTableWidget, QSlider, QFileDialog)
 
+
+
+class NodeSong:
+    def __init__(self, title, artist, album):
+        self.title = title
+        self.artist = artist
+        self.album = album
+        self.next = None
+        self.previous = None
+
+
+class Queue:
+    def __init__(self):
+        self.lenght = 0
+        self.origin = None
+        self.head = None
+
+    def is_empty(self):
+        return self.lenght == 0
+    
+    def __len__(self):
+        return self.lenght
+    
+    def add_song(self, title, artist, album):
+        new_node = NodeSong(title, artist, album)
+        if self.is_empty():
+            self.head = new_node
+            self.origin = new_node
+            self.head.next = self.origin
+            self.head.previous = self.origin
+        else:
+            self.head.next = new_node
+            new_node.previous = self.head
+            new_node.next = self.origin
+            self.head = new_node
+        self.lenght += 1
+
+    def remove_song(self, node:NodeSong):
+        if not self.is_empty():
+            
+            if len(self) == 1:
+                self.head = None
+                self.origin = None
+            else:
+                node.previous.next = node.next
+                node.next.previous = node.previous
+                if node == self.origin:
+                    self.origin = node.next
+                if node == self.head:
+                    self.head = node.previous
+            self.lenght -= 1
+
+
 class VideoWidget(QWidget):
     """Peint les frames reçues via QVideoSink — pas de surface native."""
     def __init__(self, parent=None):
@@ -33,12 +86,14 @@ class VideoWidget(QWidget):
         else:
             painter.fillRect(self.rect(), Qt.black)
 
+
 class MediaPlayer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.player = QMediaPlayer(self)
         self.audio = QAudioOutput(self)
         # connecter l'audio au player et initialiser le volume
+        self.queue = Queue()
         self.player.setAudioOutput(self.audio)
         self.audio.setVolume(0.5)  # 0.0 .. 1.0
         # debug rapide pour voir erreurs / statut
@@ -55,6 +110,7 @@ class MediaPlayer(QWidget):
         self.playToggleBtn.clicked.connect(self.open_and_play)
         self.stopBtn = QPushButton("Stop", self)
         self.menuBtn = QPushButton("Menu", self)
+        self.queueBtn = QPushButton("Queue", self)
 
         self.positionSlider = QSlider(Qt.Horizontal, self)
         self.positionSlider.setRange(0, 0)
@@ -69,6 +125,7 @@ class MediaPlayer(QWidget):
 
         controlsLayout = QHBoxLayout()
         controlsLayout.addStretch()
+        controlsLayout.addWidget(self.queueBtn)
         controlsLayout.addWidget(self.playToggleBtn)
         controlsLayout.addWidget(self.stopBtn)
         controlsLayout.addWidget(self.volumeSlider)
@@ -91,3 +148,4 @@ class MediaPlayer(QWidget):
         print("audioAvailable:", getattr(self.player, "isAudioAvailable", lambda: None)(),
               " videoAvailable:", getattr(self.player, "isVideoAvailable", lambda: None)())
         self.player.play()
+        
