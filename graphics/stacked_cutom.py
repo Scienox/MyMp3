@@ -21,7 +21,7 @@ class StackedCustom(QWidget):
         self._top = QWidget(self)
         self._top_layout = QHBoxLayout(self._top)
         self._top_layout.setContentsMargins(0, 0, 0, 0)
-        self._top_layout.setSpacing(4)
+        self._top_layout.setSpacing(0)
 
         # Group pour gérer l'état checked des boutons
         self._btn_group = QButtonGroup(self)
