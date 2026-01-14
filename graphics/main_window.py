@@ -52,6 +52,8 @@ class MainWindow(QMainWindow):
         self.menuDrawerAnim.setEasingCurve(QEasingCurve.InOutQuad)
         self.menuDrawerAnim.setDuration(self._anim_full_duration)
         self.menuDrawerAnim.finished.connect(self._on_menuDrawerAnim_finished)
+        # update queue width progressively while the menu animates
+        self.menuDrawerAnim.valueChanged.connect(self._on_menuDrawerAnim_valueChanged)
 
         self.menuDrawerLayout = QVBoxLayout(self.menuDrawer)
     
@@ -180,6 +182,20 @@ class MainWindow(QMainWindow):
             self.menuDrawer.hide()
         self.menuIsMoving = False
         self.resize_queue()
+
+    def _on_menuDrawerAnim_valueChanged(self, value):
+        # value: QPoint position of the menu drawer during animation
+        try:
+            menu_x = value.x()
+        except Exception:
+            return
+        # only adjust if queue exists and is visible
+        if hasattr(self, "queueDrawer") and self.queueDrawer.isVisible():
+            available_w = menu_x - (self.menuYAxer * 2)
+            new_w = max(100, available_w)
+            # avoid unnecessary layout updates
+            if self.queueDrawer.width() != new_w:
+                self.queueDrawer.setFixedWidth(new_w)
 
     def _on_queueDrawerAnim_finished(self):
         if not self.queueIsOpening:
